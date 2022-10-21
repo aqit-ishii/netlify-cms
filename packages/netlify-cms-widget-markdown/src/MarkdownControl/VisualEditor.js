@@ -5,8 +5,8 @@ import { fromJS } from 'immutable';
 import styled from '@emotion/styled';
 import { css as coreCss, ClassNames } from '@emotion/core';
 import { get, isEmpty, debounce } from 'lodash';
-import { Value, Document, Block, Text } from 'slate';
-import { Editor as Slate } from 'slate-react';
+import { Element,  Text } from 'slate';
+import { Slate } from 'slate-react';
 import { lengths, fonts, zIndex } from 'netlify-cms-ui-default';
 
 import { editorStyleVars, EditorControlBar } from '../styles';
@@ -40,15 +40,14 @@ const InsertionPoint = styled.div`
 
 function createEmptyRawDoc() {
   const emptyText = Text.create('');
-  const emptyBlock = Block.create({ object: 'block', type: 'paragraph', nodes: [emptyText] });
+  const emptyBlock = Element.create({ object: 'block', type: 'paragraph', nodes: [emptyText] });
   return { nodes: [emptyBlock] };
 }
 
 function createSlateValue(rawValue, { voidCodeBlock, remarkPlugins }) {
   const rawDoc = rawValue && markdownToSlate(rawValue, { voidCodeBlock, remarkPlugins });
   const rawDocHasNodes = !isEmpty(get(rawDoc, 'nodes'));
-  const document = Document.fromJSON(rawDocHasNodes ? rawDoc : createEmptyRawDoc());
-  return Value.create({ document });
+  return rawDocHasNodes ? rawDoc : createEmptyRawDoc();
 }
 
 export function mergeMediaConfig(editorComponents, field) {
@@ -83,7 +82,7 @@ export function mergeMediaConfig(editorComponents, field) {
   }
 }
 
-export default class Editor extends React.Component {
+export default class VisualEditor extends React.Component {
   constructor(props) {
     super(props);
     const editorComponents = props.getEditorComponents();

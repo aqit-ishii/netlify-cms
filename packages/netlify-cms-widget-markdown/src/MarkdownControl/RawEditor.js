@@ -3,11 +3,10 @@ import PropTypes from 'prop-types';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import styled from '@emotion/styled';
 import { ClassNames } from '@emotion/core';
-import { debounce } from 'lodash';
-import { Value } from 'slate';
-import { Editor as Slate, setEventTransfer } from 'slate-react';
-import Plain from 'slate-plain-serializer';
-import isHotkey from 'is-hotkey';
+import { debounce, isEqual } from 'lodash';
+import { createEditor, Node, Editor } from 'slate';
+import { Slate, Editable, withReact } from 'slate-react';
+import { withHistory } from 'slate-history';
 import { lengths, fonts } from 'netlify-cms-ui-default';
 
 import { markdownToHtml } from '../serializers';
@@ -36,21 +35,24 @@ export default class RawEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: Plain.deserialize(this.props.value || ''),
+      value: (this.props.value || '')
+        .split('\n')
+        .map(text => ({ type: 'paragraph', children: [{ text }] })),
+    };
+    this.editor = withReact(withHistory(createEditor()));
+    // MEMO: Slate 0.57.1 does NOT handle `paste without formatting` (shift-ctrl-v), that will be fixed by PR #3415 in ianstormtaylor/slate.
+    // This problem will be automatically corrected if the PR is merged.
+    this.editor.insertData = data => {
+      const value = data
+        .getData('text/plain')
+        .split('\n')
+        .map(text => ({ type: 'paragraph', children: [{ text }] }));
+      Editor.insertFragment(this.editor, value);
     };
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return (
-      !this.state.value.equals(nextState.value) ||
-      nextProps.value !== Plain.serialize(nextState.value)
-    );
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.value !== this.props.value) {
-      this.setState({ value: Plain.deserialize(this.props.value) });
-    }
+    return !isEqual(this.state.value, nextState.value);
   }
 
   componentDidMount() {
@@ -60,53 +62,40 @@ export default class RawEditor extends React.Component {
     }
   }
 
-  handleCopy = (event, editor) => {
-    const { getAsset, resolveWidget } = this.props;
-    const markdown = Plain.serialize(Value.create({ document: editor.value.fragment }));
-    const html = markdownToHtml(markdown, { getAsset, resolveWidget });
-    setEventTransfer(event, 'text', markdown);
-    setEventTransfer(event, 'html', html);
+  handleCopy = async (event) => {
+    event.persist();
+    const { getAsset, resolveWidget, } = this.props;
+    const fragment = Editor.fragment(this.editor, this.editor.selection);
+    const markdown = fragment.map(n => Node.string(n)).join('\n');
+    const html = await markdownToHtml(markdown, { getAsset, resolveWidget });
+    event.clipboardData.setData('text/plain', markdown);
+    event.clipboardData.setData('text/html', html);
     event.preventDefault();
   };
 
-  handleCut = (event, editor, next) => {
-    this.handleCopy(event, editor, next);
-    editor.delete();
+  handleCut = async event => {
+    await this.handleCopy(event);
+    Editor.deleteFragment(this.editor);
   };
 
-  handlePaste = (event, editor, next) => {
-    event.preventDefault();
-    const data = event.clipboardData;
-    if (isHotkey('shift', event)) {
-      return next();
+  handleChange = value => {
+    if (!isEqual(this.state.value, value)) {
+      this.handleDocumentChange(value);
     }
-
-    const value = Plain.deserialize(data.getData('text/plain'));
-    return editor.insertFragment(value.document);
-  };
-
-  handleChange = editor => {
-    if (!this.state.value.document.equals(editor.value.document)) {
-      this.handleDocumentChange(editor);
-    }
-    this.setState({ value: editor.value });
+    this.setState({ value });
   };
 
   /**
    * When the document value changes, serialize from Slate's AST back to plain
    * text (which is Markdown) and pass that up as the new value.
    */
-  handleDocumentChange = debounce(editor => {
-    const value = Plain.serialize(editor.value);
-    this.props.onChange(value);
+  handleDocumentChange = debounce(value => {
+    const markdown = value.map(n => Node.string(n)).join('\n');
+    this.props.onChange(markdown);
   }, 150);
 
   handleToggleMode = () => {
     this.props.onMode('rich_text');
-  };
-
-  processRef = ref => {
-    this.editor = ref;
   };
 
   render() {
@@ -125,20 +114,18 @@ export default class RawEditor extends React.Component {
         </EditorControlBar>
         <ClassNames>
           {({ css, cx }) => (
-            <Slate
+            <Slate editor={this.editor} value={this.state.value} onChange={this.handleChange} t={t}>
+              <Editable
               className={cx(
                 className,
                 css`
-                  ${rawEditorStyles({ minimal: field.get('minimal') })}
+                    ${rawEditorStyles({ minimal: field.get('minimal') })}
                 `,
               )}
-              value={this.state.value}
-              onChange={this.handleChange}
-              onPaste={this.handlePaste}
               onCut={this.handleCut}
               onCopy={this.handleCopy}
-              ref={this.processRef}
             />
+            </Slate>
           )}
         </ClassNames>
       </RawEditorContainer>

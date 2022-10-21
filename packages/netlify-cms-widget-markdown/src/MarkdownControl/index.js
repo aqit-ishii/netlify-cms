@@ -4,7 +4,7 @@ import ImmutablePropTypes from 'react-immutable-proptypes';
 import { List, Map } from 'immutable';
 
 import RawEditor from './RawEditor';
-import VisualEditor from './VisualEditor';
+//import VisualEditor from './VisualEditor';
 
 const MODE_STORAGE_KEY = 'cms.md-mode';
 
@@ -75,35 +75,35 @@ export default class MarkdownControl extends React.Component {
       value,
       classNameWrapper,
       field,
-      getEditorComponents,
+      // getEditorComponents,
       getRemarkPlugins,
-      resolveWidget,
+      // resolveWidget,
       t,
       isDisabled,
     } = this.props;
 
     const { mode, pendingFocus } = this.state;
     const isShowModeToggle = this.getAllowedModes().length > 1;
-    const visualEditor = (
-      <div className="cms-editor-visual" ref={this.processRef}>
-        <VisualEditor
-          onChange={onChange}
-          onAddAsset={onAddAsset}
-          isShowModeToggle={isShowModeToggle}
-          onMode={this.handleMode}
-          getAsset={getAsset}
-          className={classNameWrapper}
-          value={value}
-          field={field}
-          getEditorComponents={getEditorComponents}
-          getRemarkPlugins={getRemarkPlugins}
-          resolveWidget={resolveWidget}
-          pendingFocus={pendingFocus && this.setFocusReceived}
-          t={t}
-          isDisabled={isDisabled}
-        />
-      </div>
-    );
+    // const visualEditor = (
+    //   <div className="cms-editor-visual" ref={this.processRef}>
+    //     <VisualEditor
+    //       onChange={onChange}
+    //       onAddAsset={onAddAsset}
+    //       isShowModeToggle={isShowModeToggle}
+    //       onMode={this.handleMode}
+    //       getAsset={getAsset}
+    //       className={classNameWrapper}
+    //       value={value}
+    //       field={field}
+    //       getEditorComponents={getEditorComponents}
+    //       getRemarkPlugins={getRemarkPlugins}
+    //       resolveWidget={resolveWidget}
+    //       pendingFocus={pendingFocus && this.setFocusReceived}
+    //       t={t}
+    //       isDisabled={isDisabled}
+    //     />
+    //   </div>
+    // );
     const rawEditor = (
       <div className="cms-editor-raw" ref={this.processRef}>
         <RawEditor
@@ -120,6 +120,7 @@ export default class MarkdownControl extends React.Component {
         />
       </div>
     );
-    return mode === 'rich_text' ? visualEditor : rawEditor;
+    //return mode === 'rich_text' ? visualEditor : rawEditor;
+    return rawEditor;
   }
 }
