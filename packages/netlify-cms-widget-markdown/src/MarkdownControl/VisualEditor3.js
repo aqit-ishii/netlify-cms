@@ -6,18 +6,17 @@ import {
   Transforms,
   createEditor,
   Descendant,
-  Element as SlateElement, Node,
+  Element as SlateElement, Node, Text,
 } from 'slate'
 import { withHistory } from 'slate-history'
 
 // import { Ref, PropsWithChildren } from 'react'
 import ReactDOM from 'react-dom'
 import { cx, css } from '@emotion/css'
-import {debounce, isEqual} from "lodash";
+import {debounce, get, isEmpty, isEqual} from "lodash";
 import PropTypes from "prop-types";
 import ImmutablePropTypes from "react-immutable-proptypes";
-import VisualEditor2, {mergeMediaConfig} from "./VisualEditor2";
-import {slateToMarkdown} from "../serializers";
+import {markdownToSlate, slateToMarkdown} from "../serializers";
 import {fromJS} from "immutable";
 import {renderBlock, renderMark} from "./renderers";
 
@@ -31,8 +30,52 @@ const HOTKEYS = {
 const LIST_TYPES = ['numbered-list', 'bulleted-list']
 const TEXT_ALIGN_TYPES = ['left', 'center', 'right', 'justify']
 
+function createEmptyRawDoc() {
+  const emptyText = Text.create('');
+  const emptyBlock = Element.create({ object: 'block', type: 'paragraph', nodes: [emptyText] });
+  return { nodes: [emptyBlock] };
+}
+
+function createSlateValue(rawValue, { voidCodeBlock, remarkPlugins }) {
+  const rawDoc = rawValue && markdownToSlate(rawValue, { voidCodeBlock, remarkPlugins });
+  const rawDocHasNodes = !isEmpty(get(rawDoc, 'nodes'));
+  return rawDocHasNodes ? rawDoc : createEmptyRawDoc();
+}
+
+export function mergeMediaConfig(editorComponents, field) {
+  // merge editor media library config to image components
+  if (editorComponents.has('image')) {
+    const imageComponent = editorComponents.get('image');
+    const fields = imageComponent?.fields;
+
+    if (fields) {
+      imageComponent.fields = fields.update(
+        fields.findIndex(f => f.get('widget') === 'image'),
+        f => {
+          // merge `media_library` config
+          if (field.has('media_library')) {
+            f = f.set(
+              'media_library',
+              field.get('media_library').mergeDeep(f.get('media_library')),
+            );
+          }
+          // merge 'media_folder'
+          if (field.has('media_folder') && !f.has('media_folder')) {
+            f = f.set('media_folder', field.get('media_folder'));
+          }
+          // merge 'public_folder'
+          if (field.has('public_folder') && !f.has('public_folder')) {
+            f = f.set('public_folder', field.get('public_folder'));
+          }
+          return f;
+        },
+      );
+    }
+  }
+}
+
 const VisualEditor3 = (props) => {
-  const {t, value, className, onChange, getEditorComponents} = props;
+  const {t, value, className, field, resolveWidget, onChange, getEditorComponents, getRemarkPlugins} = props;
 
   const editorComps = getEditorComponents();
   const codeBlockComponent = fromJS(editorComps.find(({ type }) => type === 'code-block'));
@@ -74,7 +117,7 @@ const VisualEditor3 = (props) => {
     const raw = editor.value.document.toJS();
     const markdown = slateToMarkdown(raw, {
       voidCodeBlock: codeBlockComponent,
-      remarkPlugins: remarkPlugins,
+      remarkPlugins,
     });
     onChange(markdown);
 
@@ -82,14 +125,14 @@ const VisualEditor3 = (props) => {
   }, 150);
 
   const shouldComponentUpdate = memo(
-    props => {...},
+    props => props,
     (nextProps, nextState) => {
       if (!stateValue.equals(nextState.value)) return true;
 
       const raw = nextState.value.document.toJS();
       const markdown = slateToMarkdown(raw, {
         voidCodeBlock: codeBlockComponent,
-        remarkPlugins: remarkPlugins,
+        remarkPlugins,
       });
       return nextProps.value !== markdown;
     }
@@ -126,6 +169,7 @@ const VisualEditor3 = (props) => {
         placeholder="Enter some rich text…"
         spellCheck
         autoFocus
+        onChage={handleChange}
         onKeyDown={event => {
           for (const hotkey in HOTKEYS) {
             if (isHotkey(hotkey, event /* as any */)) {

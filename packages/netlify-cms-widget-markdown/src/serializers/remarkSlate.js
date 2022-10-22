@@ -144,7 +144,7 @@ export default function remarkToSlate({ voidCodeBlock } = {}) {
    * Add nodes to a parent node only if `nodes` is truthy.
    */
   function addNodes(parent, nodes) {
-    return nodes ? { ...parent, nodes } : parent;
+    return nodes ? { ...parent, children: nodes } : parent;
   }
 
   /**

@@ -62,10 +62,10 @@ export default function slateToRemark(raw, { voidCodeBlock }) {
      * Combine adjacent text and inline nodes before processing so they can
      * share marks.
      */
-    const hasBlockChildren = node.nodes && node.nodes[0] && node.nodes[0].object === 'block';
+    const hasBlockChildren = node.children && node.children[0] && node.children[0].object === 'block';
     const children = hasBlockChildren
-      ? node.nodes.map(transform).filter(v => v)
-      : convertInlineAndTextChildren(node.nodes);
+      ? node.children.map(transform).filter(v => v)
+      : convertInlineAndTextChildren(node.children);
 
     const output = convertBlockNode(node, children);
     //console.log(JSON.stringify(output, null, 2));
@@ -76,7 +76,7 @@ export default function slateToRemark(raw, { voidCodeBlock }) {
     return nodes.map(node => {
       switch (node.type) {
         case 'link': {
-          const updatedNodes = removeMarkFromNodes(node.nodes, markType);
+          const updatedNodes = removeMarkFromNodes(node.children, markType);
           return {
             ...node,
             nodes: updatedNodes,
@@ -106,7 +106,7 @@ export default function slateToRemark(raw, { voidCodeBlock }) {
         // ends up nested inside of that mark. Code marks sometimes can't do
         // that, like when they wrap all of the text content of a link. Here we
         // remove code marks before processing so that they stay put.
-        const nodesWithoutCode = node.nodes.map(n => ({
+        const nodesWithoutCode = node.children.map(n => ({
           ...n,
           marks: n.marks ? n.marks.filter(({ type }) => type !== 'code') : n.marks,
         }));
@@ -231,7 +231,7 @@ export default function slateToRemark(raw, { voidCodeBlock }) {
           convertedNodes.push(u(markMap[markType], node.data, node.text));
         } else if (!markType && markNodes.length === 1 && markNodes[0].object === 'inline') {
           const node = markNodes[0];
-          convertedNodes.push(convertInlineNode(node, convertInlineAndTextChildren(node.nodes)));
+          convertedNodes.push(convertInlineNode(node, convertInlineAndTextChildren(node.children)));
         } else {
           const { leadingWhitespace, trailingWhitespace, centerNodes } =
             normalizeFlankingWhitespace(markNodes);
