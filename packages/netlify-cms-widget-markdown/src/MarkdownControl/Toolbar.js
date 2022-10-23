@@ -165,16 +165,16 @@ export default class Toolbar extends React.Component {
               disabled={disabled}
             />
           )}
-          {isVisible('link') && (
-            <ToolbarButton
-              type="link"
-              label={t('editor.editorWidgets.markdown.link')}
-              icon="link"
-              onClick={onLinkClick}
-              isActive={hasInline('link')}
-              disabled={disabled}
-            />
-          )}
+          {/*{isVisible('link') && (*/}
+          {/*  <ToolbarButton*/}
+          {/*    type="link"*/}
+          {/*    label={t('editor.editorWidgets.markdown.link')}*/}
+          {/*    icon="link"*/}
+          {/*    onClick={onLinkClick}*/}
+          {/*    isActive={hasInline('link')}*/}
+          {/*    disabled={disabled}*/}
+          {/*  />*/}
+          {/*)}*/}
           {/* Show dropdown if at least one heading is not hidden */}
           {Object.keys(headingOptions).some(isVisible) && (
             <ToolbarDropdownWrapper>
@@ -228,17 +228,17 @@ export default class Toolbar extends React.Component {
               disabled={disabled}
             />
           )}
-          {isVisible('numbered-list') && (
-            <ToolbarButton
-              type="numbered-list"
-              label={t('editor.editorWidgets.markdown.numberedList')}
-              icon="list-numbered"
-              onClick={this.handleBlockClick}
-              isActive={hasListItems('numbered-list')}
-              disabled={disabled}
-            />
-          )}
-          {showEditorComponents && (
+          {/*{isVisible('numbered-list') && (*/}
+          {/*  <ToolbarButton*/}
+          {/*    type="numbered-list"*/}
+          {/*    label={t('editor.editorWidgets.markdown.numberedList')}*/}
+          {/*    icon="list-numbered"*/}
+          {/*    onClick={this.handleBlockClick}*/}
+          {/*    isActive={hasListItems('numbered-list')}*/}
+          {/*    disabled={disabled}*/}
+          {/*  />*/}
+          {/*)}*/}
+          {/*showEditorComponents && (
             <ToolbarDropdownWrapper>
               <Dropdown
                 dropdownTopOverlap="36px"
@@ -259,7 +259,7 @@ export default class Toolbar extends React.Component {
                 ))}
               </Dropdown>
             </ToolbarDropdownWrapper>
-          )}
+          )*/}
         </div>
         {isShowModeToggle && (
           <ToolbarToggle>

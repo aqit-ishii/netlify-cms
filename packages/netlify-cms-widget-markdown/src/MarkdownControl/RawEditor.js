@@ -57,7 +57,7 @@ export default class RawEditor extends React.Component {
 
   componentDidMount() {
     if (this.props.pendingFocus) {
-      this.editor.focus();
+      //this.editor.focus();
       this.props.pendingFocus();
     }
   }

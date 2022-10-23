@@ -4,7 +4,7 @@ import ImmutablePropTypes from 'react-immutable-proptypes';
 import { List, Map } from 'immutable';
 
 import RawEditor from './RawEditor';
-import VisualEditor5 from './VisualEditor5';
+import VisualEditor6 from './VisualEditor6';
 
 const MODE_STORAGE_KEY = 'cms.md-mode';
 
@@ -86,7 +86,7 @@ export default class MarkdownControl extends React.Component {
     const isShowModeToggle = this.getAllowedModes().length > 1;
     const visualEditor = (
       <div className="cms-editor-visual" ref={this.processRef}>
-        <VisualEditor5
+        <VisualEditor6
           onChange={onChange}
           onAddAsset={onAddAsset}
           isShowModeToggle={isShowModeToggle}
@@ -120,8 +120,8 @@ export default class MarkdownControl extends React.Component {
         />
       </div>
     );
-    //return mode === 'rich_text' ? visualEditor : rawEditor;
+    return mode === 'rich_text' ? visualEditor : rawEditor;
     //return rawEditor;
-    return visualEditor;
+    // return visualEditor;
   }
 }
