@@ -125,83 +125,87 @@ const StyledTd = styled.td`
 /**
  * Mark Components
  */
-function Bold(props) {
-  return <strong>{props.children}</strong>;
+function Bold({ children }) {
+  return <strong>{children}</strong>;
 }
 
-function Italic(props) {
-  return <em>{props.children}</em>;
+function Italic({ children }) {
+  return <em>{children}</em>;
 }
 
-function Strikethrough(props) {
-  return <s>{props.children}</s>;
+function Underline({ children }) {
+  return <u>{children}</u>;
 }
 
-function Code(props) {
-  return <StyledCode>{props.children}</StyledCode>;
+function Strikethrough({ children }) {
+  return <s>{children}</s>;
+}
+
+function Code({children }) {
+  return <StyledCode>{children}</StyledCode>;
 }
 
 /**
  * Node Components
  */
-function Paragraph(props) {
-  return <StyledP {...props.attributes}>{props.children}</StyledP>;
+function Paragraph({ attributes, children }) {
+  return <StyledP {...attributes}>{children}</StyledP>;
 }
 
-function ListItem(props) {
-  return <StyledLi {...props.attributes}>{props.children}</StyledLi>;
+function ListItem({ attributes, children }) {
+  return <StyledLi {...attributes}>{children}</StyledLi>;
 }
 
-function Quote(props) {
-  return <StyledBlockQuote {...props.attributes}>{props.children}</StyledBlockQuote>;
+function Quote({ attributes, children }) {
+  return <StyledBlockQuote {...attributes}>{children}</StyledBlockQuote>;
 }
 
-function CodeBlock(props) {
+function CodeBlock({ attributes, children }) {
   return (
     <StyledPre>
-      <StyledCode {...props.attributes}>{props.children}</StyledCode>
+      <StyledCode {...attributes}>{children}</StyledCode>
     </StyledPre>
   );
 }
 
-function HeadingOne(props) {
-  return <StyledH1 {...props.attributes}>{props.children}</StyledH1>;
+function HeadingOne({ attributes, children }) {
+  return <StyledH1 {...attributes}>{children}</StyledH1>;
 }
 
-function HeadingTwo(props) {
-  return <StyledH2 {...props.attributes}>{props.children}</StyledH2>;
+function HeadingTwo({ attributes, children }) {
+  return <StyledH2 {...attributes}>{children}</StyledH2>;
 }
 
-function HeadingThree(props) {
-  return <StyledH3 {...props.attributes}>{props.children}</StyledH3>;
+function HeadingThree({ attributes, children }) {
+  return <StyledH3 {...attributes}>{children}</StyledH3>;
 }
 
-function HeadingFour(props) {
-  return <StyledH4 {...props.attributes}>{props.children}</StyledH4>;
+function HeadingFour({ attributes, children }) {
+  return <StyledH4 {...attributes}>{children}</StyledH4>;
 }
 
-function HeadingFive(props) {
-  return <StyledH5 {...props.attributes}>{props.children}</StyledH5>;
+function HeadingFive({ attributes, children }) {
+  return <StyledH5 {...attributes}>{children}</StyledH5>;
 }
 
-function HeadingSix(props) {
-  return <StyledH6 {...props.attributes}>{props.children}</StyledH6>;
+function HeadingSix({ attributes, children }) {
+  return <StyledH6 {...attributes}>{children}</StyledH6>;
 }
 
-function Table(props) {
+function Table({ attributes, children }) {
   return (
     <StyledTable>
-      <tbody {...props.attributes}>{props.children}</tbody>
+      <tbody {...attributes}>{children}</tbody>
     </StyledTable>
   );
 }
 
-function TableRow(props) {
-  return <tr {...props.attributes}>{props.children}</tr>;
+function TableRow({ attributes, children }) {
+  return <tr {...attributes}>{children}</tr>;
 }
 
-function TableCell(props) {
-  return <StyledTd {...props.attributes}>{props.children}</StyledTd>;
+function TableCell({ attributes, children }) {
+  return <StyledTd {...attributes}>{children}</StyledTd>;
 }
 
 function ThematicBreak(props) {
@@ -209,7 +213,7 @@ function ThematicBreak(props) {
     <StyledHr
       {...props.attributes}
       css={
-        props.editor.isSelected(props.node) &&
+        props.editor.isSelected(props.element) &&
         css`
           box-shadow: 0 0 0 2px ${colors.active};
           border-radius: 8px;
@@ -230,14 +234,14 @@ function BulletedList(props) {
 
 function NumberedList(props) {
   return (
-    <StyledOl {...props.attributes} start={props.node.data.get('start') || 1}>
+    <StyledOl {...props.attributes} start={props.element.data.get('start') || 1}>
       {props.children}
     </StyledOl>
   );
 }
 
 function Link(props) {
-  const data = props.node.get('data');
+  const data = props.element.get('data');
   const url = data.get('url');
   const title = data.get('title') || url;
 
@@ -249,7 +253,7 @@ function Link(props) {
 }
 
 function Image(props) {
-  const data = props.node.get('data');
+  const data = props.element.get('data');
   const marks = data.get('marks');
   const url = data.get('url');
   const title = data.get('title');
@@ -263,91 +267,93 @@ function Image(props) {
   return result;
 }
 
-export function renderMark() {
-  return props => {
-    switch (props.mark.type) {
-      case 'bold':
-        return <Bold {...props} />;
-      case 'italic':
-        return <Italic {...props} />;
-      case 'strikethrough':
-        return <Strikethrough {...props} />;
-      case 'code':
-        return <Code {...props} />;
-    }
-  };
+export function renderMark({ attributes, children, leaf }) {
+  if (leaf.bold) {
+    return <Bold {...attributes}>{children}</Bold>
+  }
+  if (leaf.italic) {
+    return <Italic {...attributes}>{children}</Italic>
+  }
+  if (leaf.underline) {
+    return <Underline {...attributes}>{children}</Underline>
+  }
+  if (leaf.strikethrough) {
+    return <Strikethrough {...attributes}>{children}</Strikethrough>
+  }
+  if (leaf.code) {
+    return <Code {...attributes}>{children}</Code>
+  }
+  return <span {...attributes}>{children}</span>
 }
 
-export function renderInline() {
-  return props => {
-    switch (props.node.type) {
-      case 'link':
-        return <Link {...props} />;
-      case 'image':
-        return <Image {...props} />;
-      case 'break':
-        return <Break {...props} />;
-    }
-  };
+
+export function renderInline({attributes, children, element}) {
+  switch (element.type) {
+    case 'link':
+      return <Link {...attributes} >{children}</Link>;
+    case 'image':
+      return <Image {...attributes} >{children}</Image>;
+    case 'break':
+      return <Break {...attributes} >{children}</Break>;
+  }
 }
 
-export function renderBlock({ classNameWrapper, codeBlockComponent }) {
-  return props => {
-    switch (props.node.type) {
-      case 'paragraph':
-        return <Paragraph {...props} />;
-      case 'list-item':
-        return <ListItem {...props} />;
-      case 'quote':
-        return <Quote {...props} />;
-      case 'code-block':
-        if (codeBlockComponent) {
-          return (
-            <VoidBlock {...props}>
-              <Shortcode
-                classNameWrapper={classNameWrapper}
-                typeOverload="code-block"
-                dataKey={false}
-                {...props}
-              />
-            </VoidBlock>
-          );
-        }
-        return <CodeBlock {...props} />;
-      case 'heading-one':
-        return <HeadingOne {...props} />;
-      case 'heading-two':
-        return <HeadingTwo {...props} />;
-      case 'heading-three':
-        return <HeadingThree {...props} />;
-      case 'heading-four':
-        return <HeadingFour {...props} />;
-      case 'heading-five':
-        return <HeadingFive {...props} />;
-      case 'heading-six':
-        return <HeadingSix {...props} />;
-      case 'table':
-        return <Table {...props} />;
-      case 'table-row':
-        return <TableRow {...props} />;
-      case 'table-cell':
-        return <TableCell {...props} />;
-      case 'thematic-break':
+export function renderBlock({ classNameWrapper, codeBlockComponent, attributes, children, element }) {
+  switch (element.type) {
+    case 'paragraph':
+      return <Paragraph {...attributes} >{children}</Paragraph>;
+    case 'list-item':
+      return <ListItem {...attributes} >{children}</ListItem>;
+    case 'quote':
+      return <Quote {...attributes} >{children}</Quote>;
+    case 'code-block':
+      if (codeBlockComponent) {
         return (
-          <VoidBlock {...props}>
-            <ThematicBreak editor={props.editor} node={props.node} />
+          <VoidBlock {...attributes}>
+            <Shortcode
+              classNameWrapper={classNameWrapper}
+              typeOverload="code-block"
+              dataKey={false}
+              {...attributes}
+            >{children}</Shortcode>
           </VoidBlock>
         );
-      case 'bulleted-list':
-        return <BulletedList {...props} />;
-      case 'numbered-list':
-        return <NumberedList {...props} />;
-      case 'shortcode':
-        return (
-          <VoidBlock {...props}>
-            <Shortcode classNameWrapper={classNameWrapper} {...props} />
-          </VoidBlock>
-        );
-    }
-  };
+      }
+      return <CodeBlock {...attributes} >{children}</CodeBlock>;
+    case 'heading-one':
+      return <HeadingOne {...attributes} >{children}</HeadingOne>;
+    case 'heading-two':
+      return <HeadingTwo {...attributes} >{children}</HeadingTwo>;
+    case 'heading-three':
+      return <HeadingThree {...attributes} >{children}</HeadingThree>;
+    case 'heading-four':
+      return <HeadingFour {...attributes} >{children}</HeadingFour>;
+    case 'heading-five':
+      return <HeadingFive {...attributes} >{children}</HeadingFive>;
+    case 'heading-six':
+      return <HeadingSix {...attributes} >{children}</HeadingSix>;
+    case 'table':
+      return <Table {...attributes} >{children}</Table>;
+    case 'table-row':
+      return <TableRow {...attributes} >{children}</TableRow>;
+    case 'table-cell':
+      return <TableCell {...attributes} >{children}</TableCell>;
+    case 'thematic-break':
+      return (
+        <VoidBlock {...attributes}>
+          <ThematicBreak {...attributes} >{children}</ThematicBreak>
+        </VoidBlock>
+      );
+    case 'bulleted-list':
+      return <BulletedList {...attributes} >{children}</BulletedList>;
+    case 'numbered-list':
+      return <NumberedList {...attributes} >{children}</NumberedList>;
+    case 'shortcode':
+      return (
+        <VoidBlock {...attributes}>
+          <Shortcode classNameWrapper={classNameWrapper} {...attributes} >{children}</Shortcode>
+        </VoidBlock>
+      );
+  }
 }
+

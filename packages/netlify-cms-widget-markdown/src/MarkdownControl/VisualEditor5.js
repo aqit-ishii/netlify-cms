@@ -81,20 +81,20 @@ const VisualEditor4 = (props) => {
   const remarkPlugins = getRemarkPlugins();
   mergeMediaConfig(editorComponents, field);
 
-  // const renderElement = useCallback(() => renderBlock({
-  //   classNameWrapper: className,
-  //   resolveWidget,
-  //   codeBlockComponent,
-  // }),[renderBlock, className, resolveWidget, codeBlockComponent]);
-  // const renderLeaf = useCallback(renderMark, [renderMark]);
-
-
   const [stateValue, setStateValue] = useState({
     value: createSlateValue(value, { voidCodeBlock: codeBlockComponent, remarkPlugins }).children,
   });
 
-  const renderElement = useCallback(props => <Element {...props} />, [])
-  const renderLeaf = useCallback(props => <Leaf {...props} />, [])
+  const renderElement = useCallback((props) => renderBlock({
+    classNameWrapper: className,
+    resolveWidget,
+    codeBlockComponent,
+    ...props
+  }),[renderBlock, className, resolveWidget, codeBlockComponent]);
+  const renderLeaf = useCallback((props) => renderMark({...props}), [renderMark]);
+
+  // const renderElement = useCallback(props => <Element {...props} />, [])
+  //const renderLeaf = useCallback(props => <Leaf {...props} />, [])
   const editor = useMemo(() => withHistory(withReact(createEditor())), [])
 
   const handleDocumentChange = debounce(value => {
@@ -165,7 +165,7 @@ const VisualEditor4 = (props) => {
           }}
         />
       </Slate>
-      <textarea>{JSON.stringify(stateValue)}</textarea>
+      {/*<textarea>{JSON.stringify(stateValue)}</textarea>*/}
     </>
   )
 }
@@ -236,73 +236,73 @@ const isMarkActive = (editor, format) => {
   return marks ? marks[format] === true : false
 }
 
-const Element = ({ attributes, children, element }) => {
-  const style = { textAlign: element.align }
-  switch (element.type) {
-    case 'block-quote':
-      return (
-        <blockquote style={style} {...attributes}>
-          {children}
-        </blockquote>
-      )
-    case 'bulleted-list':
-      return (
-        <ul style={style} {...attributes}>
-          {children}
-        </ul>
-      )
-    case 'heading-one':
-      return (
-        <h1 style={style} {...attributes}>
-          {children}
-        </h1>
-      )
-    case 'heading-two':
-      return (
-        <h2 style={style} {...attributes}>
-          {children}
-        </h2>
-      )
-    case 'list-item':
-      return (
-        <li style={style} {...attributes}>
-          {children}
-        </li>
-      )
-    case 'numbered-list':
-      return (
-        <ol style={style} {...attributes}>
-          {children}
-        </ol>
-      )
-    default:
-      return (
-        <p style={style} {...attributes}>
-          {children}
-        </p>
-      )
-  }
-}
-
-const Leaf = ({ attributes, children, leaf }) => {
-  if (leaf.bold) {
-    children = <strong>{children}</strong>
-  }
-
-  if (leaf.code) {
-    children = <code>{children}</code>
-  }
-
-  if (leaf.italic) {
-    children = <em>{children}</em>
-  }
-
-  if (leaf.underline) {
-    children = <u>{children}</u>
-  }
-
-  return <span {...attributes}>{children}</span>
-}
+// const Element = ({ attributes, children, element }) => {
+//   const style = { textAlign: element.align }
+//   switch (element.type) {
+//     case 'block-quote':
+//       return (
+//         <blockquote style={style} {...attributes}>
+//           {children}
+//         </blockquote>
+//       )
+//     case 'bulleted-list':
+//       return (
+//         <ul style={style} {...attributes}>
+//           {children}
+//         </ul>
+//       )
+//     case 'heading-one':
+//       return (
+//         <h1 style={style} {...attributes}>
+//           {children}
+//         </h1>
+//       )
+//     case 'heading-two':
+//       return (
+//         <h2 style={style} {...attributes}>
+//           {children}
+//         </h2>
+//       )
+//     case 'list-item':
+//       return (
+//         <li style={style} {...attributes}>
+//           {children}
+//         </li>
+//       )
+//     case 'numbered-list':
+//       return (
+//         <ol style={style} {...attributes}>
+//           {children}
+//         </ol>
+//       )
+//     default:
+//       return (
+//         <p style={style} {...attributes}>
+//           {children}
+//         </p>
+//       )
+//   }
+// }
+//
+// const Leaf = ({ attributes, children, leaf }) => {
+//   if (leaf.bold) {
+//     children = <strong>{children}</strong>
+//   }
+//
+//   if (leaf.code) {
+//     children = <code>{children}</code>
+//   }
+//
+//   if (leaf.italic) {
+//     children = <em>{children}</em>
+//   }
+//
+//   if (leaf.underline) {
+//     children = <u>{children}</u>
+//   }
+//
+//   return <span {...attributes}>{children}</span>
+// }
 //
 // const BlockButton = ({ format, icon }) => {
 //   const editor = useSlate()
